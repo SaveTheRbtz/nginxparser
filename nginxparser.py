@@ -15,7 +15,7 @@ class NginxParser(object):
     right_bracket = Literal("}").suppress()
     semicolon = Literal(";").suppress()
     space = White().suppress()
-    key = Word(alphanums + "$_/")
+    key = Word(alphanums + "$_-/\"'")
     value = CharsNotIn("{};,")
     location = CharsNotIn("{};," + string.whitespace)
     # modifier for location uri [ = | ~ | ~* | ^~ ]
