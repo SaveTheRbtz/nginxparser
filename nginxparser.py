@@ -15,7 +15,7 @@ class NginxParser(object):
     right_bracket = Literal("}").suppress()
     semicolon = Literal(";").suppress()
     space = White().suppress()
-    key = Word(alphanums + "_/")
+    key = Word(alphanums + "$_/")
     value = CharsNotIn("{};,")
     location = CharsNotIn("{};," + string.whitespace)
     # modifier for location uri [ = | ~ | ~* | ^~ ]
@@ -26,7 +26,7 @@ class NginxParser(object):
     block = Forward()
 
     block << Group(
-        Group(key + Optional(space + modifier) + Optional(space + location))
+        OneOrMore(Group(key + Optional(space + modifier) + Optional(space + location)))
         + left_bracket
         + Group(ZeroOrMore(Group(assignment) | block))
         + right_bracket)
@@ -62,7 +62,12 @@ class NginxDumper(object):
         Iterates the dumped nginx content.
         """
         blocks = blocks or self.blocks
-        for key, values in blocks:
+        for keys_values in blocks:
+            if len(keys_values) > 2:
+                key = [k for keys in keys_values[:-1] for k in keys]
+                values = keys_values[-1]
+            else:
+                key, values = keys_values
             if current_indent:
                 yield spacer
             indentation = spacer * current_indent
